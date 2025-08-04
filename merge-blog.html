@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How Merge Can Mislead - Real Lessons from Sales Data</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+    body {
+      background-color: #f9f9f9;
+      color: #222;
+      padding: 2rem;
+      line-height: 1.7;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    h1 {
+      font-size: 2.4rem;
+      color: #007acc;
+    }
+    h2 {
+      color: #005f8c;
+      margin-top: 2rem;
+    }
+    code {
+      background: #eee;
+      padding: 0.3rem 0.5rem;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    pre {
+      background-color: #2d2d2d;
+      color: #f8f8f2;
+      padding: 1rem;
+      overflow-x: auto;
+      border-radius: 6px;
+      margin: 1rem 0;
+    }
+    blockquote {
+      background: #e8f4fc;
+      border-left: 5px solid #007acc;
+      padding: 1rem;
+      margin: 1.5rem 0;
+      font-style: italic;
+    }
+    .tip, .warning, .lesson {
+      padding: 1rem;
+      border-radius: 6px;
+      margin-top: 1rem;
+    }
+    .tip { background: #e6ffed; border-left: 5px solid #28a745; }
+    .warning { background: #fff3cd; border-left: 5px solid #ff9800; }
+    .lesson { background: #ffe2e6; border-left: 5px solid #e53935; }
+    footer {
+      margin-top: 4rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #777;
+    }
+    a {
+      color: #007acc;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📊 How Merge Can Mislead</h1>
+    <p><em>Real Lessons from a Sales Data Project with Pandas</em></p>
+  </header>
+
+  <section>
+    <h2>Introduction</h2>
+    <p>Merging datasets is one of the most common tasks in data science. But there’s a hidden trap when you join summary (aggregated) data into detailed records.</p>
+    <p>This blog shows a real mistake I made and the surprising lesson I learned using <code>pandas.merge()</code>.</p>
+  </section>
+
+  <section>
+    <h2>🔧 Project Setup</h2>
+    <ul>
+      <li><strong>sales.csv</strong> – Row-level sales data from customers</li>
+      <li><strong>products.csv</strong> – Product details + total quantity sold (pre-aggregated)</li>
+    </ul>
+    <div class="tip">
+      Goal: Calculate <strong>Expected Revenue</strong> by customer, product, and month.
+    </div>
+  </section>
+
+  <section>
+    <h2>🧪 Sample Data</h2>
+    <h3>sales.csv</h3>
+    <pre>OrderID,Customer,Product,Category,Amount,Date
+1001,Alice,Book,Stationery,12.99,01-01-2023
+1002,Bob,Pen,Stationery,1.99,02-01-2023
+1003,Alice,Notebook,Stationery,3.49,03-01-2023
+1004,David,Book,Stationery,12.99,04-01-2023
+1005,Alice,Pen,Stationery,1.99,05-01-2023</pre>
+
+    <h3>products.csv</h3>
+    <pre>Product,Category,Price,Quantity,Final Amount
+Book,Stationery,12.99,2,25.98
+Pen,Stationery,1.99,5,9.95
+Notebook,Stationery,3.49,7,24.43</pre>
+  </section>
+
+  <section>
+    <h2>🚨 The Mistake</h2>
+    <p>I merged products into sales and calculated revenue like this:</p>
+    <pre>merged_df = pd.merge(sales_df, products_df, on="Product", how="left")
+merged_df["Expected_Revenue"] = merged_df["Price"] * merged_df["Quantity"]</pre>
+    <div class="warning">
+      ❗ Problem: The <code>Quantity</code> column from products.csv was <strong>pre-aggregated</strong>.<br>
+      Every sales row repeated the total quantity, inflating revenue.
+    </div>
+
+    <blockquote>"When you merge a table containing totals into detailed data, pandas repeats them — causing double-counting."</blockquote>
+  </section>
+
+  <section>
+    <h2>✅ The Fix</h2>
+    <ul>
+      <li>Don’t merge in totals — only use per-product info like <code>Price</code></li>
+      <li>Do revenue calculation in <code>sales.csv</code> where quantity is actual per order</li>
+    </ul>
+    <pre># Correct way (if Quantity is per order):
+merged_df['Expected_Revenue'] = merged_df['Price'] * merged_df['Quantity']</pre>
+  </section>
+
+  <section>
+    <h2>🧠 What I Learned</h2>
+    <div class="lesson">
+      ❌ Don’t mix grouped data with raw data unless you’re sure.<br>
+      ✅ Always check row counts before and after a merge.<br>
+      🧠 Pandas is powerful — but silent. It won’t warn you!
+    </div>
+  </section>
+
+  <section>
+    <h2>📁 Explore the Project</h2>
+    <p>See the code and data on GitHub:</p>
+    <p><a href="https://github.com/Gogrey907/merge-lesson" target="_blank">🔗 GitHub Repo – merge-lesson</a></p>
+  </section>
+
+  <footer>
+    <p>© 2025 by Gogrey907 | <a href="https://gogrey907.github.io">Back to Portfolio</a></p>
+  </footer>
+</body>
+</html>
